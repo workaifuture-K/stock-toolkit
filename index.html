@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StockHero Toolkit — KOL 內容量化工具</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, "Segoe UI", "Microsoft JhengHei", "PingFang TC", sans-serif;
+  background: #0f1419; color: #e8eaed;
+  margin: 0; padding: 40px 24px; line-height: 1.7;
+}
+.wrap { max-width: 820px; margin: 0 auto; }
+header { border-bottom: 3px solid #ff5757; padding-bottom: 20px; margin-bottom: 32px; }
+h1 { font-size: 36px; margin: 0 0 8px; }
+.tagline { color: #8b95a8; font-size: 15px; margin: 0; }
+section { margin: 32px 0; }
+h2 { font-size: 20px; color: #fff; margin: 0 0 12px; }
+p { color: #c8cdd6; }
+.cta {
+  display: inline-block; background: #ff5757; color: white;
+  padding: 14px 24px; border-radius: 8px; text-decoration: none;
+  font-weight: 700; font-size: 15px; margin: 8px 8px 8px 0;
+  transition: transform 0.15s;
+}
+.cta:hover { transform: translateY(-2px); background: #ff7070; }
+.cta.secondary { background: #1f2937; color: #e8eaed; border: 1px solid #374151; }
+.cta.secondary:hover { background: #2a3142; }
+.card {
+  background: #1a1f2e; border: 1px solid #2a3142; border-radius: 10px;
+  padding: 20px 22px; margin: 14px 0;
+}
+code {
+  background: rgba(255,255,255,0.06); padding: 2px 6px;
+  border-radius: 3px; font-size: 13px; color: #facc15;
+}
+pre {
+  background: #1a1f2e; border: 1px solid #2a3142;
+  padding: 14px; border-radius: 6px; overflow-x: auto;
+  font-size: 13px; color: #e8eaed;
+}
+ul li { margin: 6px 0; color: #c8cdd6; }
+.muted { color: #8b95a8; font-size: 13px; }
+footer {
+  margin-top: 48px; padding-top: 20px; border-top: 1px solid #2a3142;
+  color: #8b95a8; font-size: 12px;
+}
+.badge {
+  display: inline-block; background: rgba(255,87,87,0.15); color: #ff7070;
+  padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;
+  margin-right: 6px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <span class="badge">OPEN SOURCE</span>
+  <span class="badge">PowerShell + JS</span>
+  <h1>StockHero Toolkit</h1>
+  <p class="tagline">KOL 內容量化系統地基。Threads / Instagram / Facebook 三平台統一 pipeline，per-KOL 獨立 Database + 分析報告。</p>
+</header>
+
+<section>
+  <a class="cta" href="install-bookmarklets.html">📌 安裝書籤（開始抓資料）</a>
+  <a class="cta secondary" href="QUICKSTART.md">⏱️ 5 分鐘上手指南</a>
+  <a class="cta secondary" href="https://github.com/workaifuture-K/stockhero-toolkit">📦 GitHub Repo</a>
+</section>
+
+<section>
+  <h2>這個工具做什麼？</h2>
+  <p>給任何一個 KOL，產出：</p>
+  <ul>
+    <li><strong>Database</strong>（結構化 JSON）— 給未來 App / Web 直接讀</li>
+    <li><strong>3 份分析報告</strong>（Threads / IG / FB）— 每份 8 段，給主管看的商務報告風格</li>
+  </ul>
+  <p>不做 KOL 之間比較、不做跨領域分析 — 每個 KOL 完全獨立。</p>
+</section>
+
+<section>
+  <h2>怎麼用（3 步驟）</h2>
+  <div class="card">
+    <strong>1. 安裝書籤</strong>（一次性）<br>
+    點上面的「安裝書籤」按鈕，把 3 個書籤拖到瀏覽器書籤列。
+  </div>
+  <div class="card">
+    <strong>2. 抓資料</strong><br>
+    開目標 KOL 的 Threads / IG / FB 主頁 → 點書籤 → 等跑完 → 按「複製」<br>
+    回 PowerShell 跑 <code>.\save_clipboard.ps1 -Author &lt;kol&gt;</code>
+  </div>
+  <div class="card">
+    <strong>3. 跑 pipeline + 看報告</strong><br>
+    <code>.\run_kol.ps1 -Author &lt;kol&gt; -Discover</code><br>
+    產出位置：<code>domains/&lt;domain&gt;/kols/&lt;kol&gt;/reports/</code>
+  </div>
+</section>
+
+<section>
+  <h2>系統需求</h2>
+  <ul>
+    <li>Windows 10/11 + PowerShell 5.1+</li>
+    <li>Chromium-based 瀏覽器（Chrome / Edge / Brave / Arc）</li>
+    <li>登入 IG / FB / Threads 的有效帳號</li>
+  </ul>
+</section>
+
+<section>
+  <h2>負責任使用</h2>
+  <p>本工具擷取的是 <strong>公開貼文</strong>（透過你已登入的瀏覽器 session）。使用前請：</p>
+  <ul>
+    <li>遵守 IG / FB / Threads 的 Terms of Service</li>
+    <li>未經被分析者同意，不要公開重新發布抓取的內容</li>
+    <li>遵守當地個資法（GDPR / 個資法等）</li>
+    <li>不可用於騷擾、起底、未經同意的商業利用</li>
+  </ul>
+</section>
+
+<footer>
+  <p>
+    StockHero Toolkit · <a href="https://github.com/workaifuture-K/stockhero-toolkit" style="color:#ff7070;">Source on GitHub</a>
+    · MIT License · Documentation in <a href="README.md" style="color:#ff7070;">README</a> ·
+    Quick start in <a href="QUICKSTART.md" style="color:#ff7070;">QUICKSTART.md</a>
+  </p>
+</footer>
+
+</div>
+</body>
+</html>
