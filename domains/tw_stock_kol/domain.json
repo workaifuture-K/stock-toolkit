@@ -1,0 +1,125 @@
+{
+    "domain_id":  "tw_stock_kol",
+    "domain_name":  "台股 KOL",
+    "description":  "聚焦台灣股市的內容創作者集合。涵蓋台股、半導體、AI、Fed 政策、地緣政治對亞洲市場影響等主題。",
+    "created_at":  "2026-05-13",
+    "kols":  [
+
+             ],
+    "domain_themes":  {
+                          "AI / 算力":  [
+                                          "AI",
+                                          "NVDA",
+                                          "輝達",
+                                          "AMD",
+                                          "CoWoS",
+                                          "伺服器",
+                                          "GPU",
+                                          "Rubin",
+                                          "Blackwell"
+                                      ],
+                          "半導體 / 晶圓":  [
+                                           "台積電",
+                                           "聯電",
+                                           "半導體",
+                                           "晶圓",
+                                           "費半",
+                                           "先進製程"
+                                       ],
+                          "記憶體":  [
+                                      "HBM",
+                                      "DRAM",
+                                      "記憶體",
+                                      "美光",
+                                      "旺宏",
+                                      "南亞科",
+                                      "華邦電"
+                                  ],
+                          "PCB / 載板":  [
+                                           "PCB",
+                                           "載板",
+                                           "欣興",
+                                           "金像電",
+                                           "南電",
+                                           "臻鼎",
+                                           "CCL"
+                                       ],
+                          "散熱 / AI硬體":  [
+                                            "散熱",
+                                            "液冷",
+                                            "均熱片",
+                                            "健策",
+                                            "奇鋐",
+                                            "雙鴻"
+                                        ],
+                          "光通訊":  [
+                                      "光通訊",
+                                      "光模組",
+                                      "COHR",
+                                      "NOKIA",
+                                      "光收發"
+                                  ],
+                          "原物料":  [
+                                      "黃金",
+                                      "白銀",
+                                      "銅",
+                                      "金價",
+                                      "原物料"
+                                  ],
+                          "Fed / 利率":  [
+                                           "Fed",
+                                           "FOMC",
+                                           "降息",
+                                           "升息",
+                                           "利率",
+                                           "PCE",
+                                           "CPI",
+                                           "非農"
+                                       ],
+                          "油價 / 中東":  [
+                                          "油價",
+                                          "原油",
+                                          "中東",
+                                          "荷姆茲",
+                                          "OPEC",
+                                          "石油"
+                                      ],
+                          "航運":  [
+                                     "航運",
+                                     "長榮",
+                                     "陽明",
+                                     "萬海",
+                                     "BDI"
+                                 ],
+                          "通膨":  [
+                                     "通膨",
+                                     "物價",
+                                     "通縮"
+                                 ],
+                          "匯率 / 台幣":  [
+                                          "台幣",
+                                          "匯率",
+                                          "美元",
+                                          "匯損"
+                                      ]
+                      },
+    "domain_keywords_filter":  [
+                                   "股",
+                                   "台積",
+                                   "盤",
+                                   "投資",
+                                   "美股",
+                                   "台股",
+                                   "Fed",
+                                   "半導體",
+                                   "記憶體"
+                               ],
+    "report_settings":  {
+                            "executive_summary_length":  "1-2 paragraphs",
+                            "include_kol_roster":  true,
+                            "include_content_samples":  true,
+                            "sample_count_per_platform":  5,
+                            "audience":  "non-domain-expert manager",
+                            "section_must_end_with_conclusion":  true
+                        }
+}
