@@ -66,6 +66,178 @@ function Get-Label($value, $thresholds, $labels) {
 }
 
 # ────────────────────────────────────────────────────────────
+# Investment-lens analysis: 五大分析面向 + 常用指標 + 個股提及
+# ────────────────────────────────────────────────────────────
+$script:InvestmentLens = [ordered]@{
+    '基本面' = @('營收','毛利','毛利率','淨利','淨利率','EPS','每股盈餘','本益比','PE','PER','ROE','ROA','PB','殖利率','配息','股息','法說會','法說','財報','季報','月營收','自結','訂單','接單','出貨','庫存','產能','擴產','資本支出','財測','展望','上修','下修','獲利','虧損','轉盈','轉虧')
+    '籌碼面' = @('外資','投信','自營商','三大法人','法人','買超','賣超','連買','連賣','大買','大賣','融資','融券','融資維持率','券資比','融資餘額','融券餘額','大戶','大股東','千張','庫藏股','庫藏','回購','集保','籌碼集中','籌碼凌亂','籌碼面','主力','散戶','分點','實戶')
+    '技術面' = @('K線','均線','5日線','10日線','20日線','月線','季線','半年線','年線','MACD','KD','RSI','布林','葛蘭碧','BBI','OBV','支撐','壓力','突破','跌破','站上','摜破','量價','成交量','量縮','量增','爆量','價量','黃金交叉','死亡交叉','多頭排列','空頭排列','W底','M頭','頭肩','三角整理','旗形','背離','缺口')
+    '消息面' = @('Fed','FOMC','聯準會','鮑威爾','鮑爾','升息','降息','利率','寬鬆','緊縮','QE','縮表','CPI','PCE','通膨','通縮','GDP','非農','失業率','ISM','中東','戰爭','衝突','川普','川習會','拜登','關稅','貿易戰','兩岸','台海','油價','原油','黃金','金價','銅價','大宗物資','美元','美元指數','DXY','台幣','匯率','日圓','人民幣','地緣政治','制裁')
+    '心理面' = @('紀律','心法','邏輯','情緒','貪婪','恐懼','人性','FOMO','止損','停損','停利','加碼','減碼','攤平','攤低','套牢','不追高','不殺低','追高殺低','風險','部位','控管','資金管理','資金水位','持股比例','心態','冷靜','耐心','等待','觀望','逢低','逢高','分批')
+}
+
+$script:StockMentions = @(
+    # ── Taiwan Large Cap ──
+    @{ name='台積電'; aliases=@('台積電','TSMC','2330','台積','TSM') }
+    @{ name='聯發科'; aliases=@('聯發科','MediaTek','2454') }
+    @{ name='鴻海';   aliases=@('鴻海','2317','Foxconn') }
+    @{ name='聯電';   aliases=@('聯電','2303','UMC') }
+    @{ name='台達電'; aliases=@('台達電','2308') }
+    @{ name='大立光'; aliases=@('大立光','3008') }
+    @{ name='南亞科'; aliases=@('南亞科','2408') }
+    @{ name='華邦電'; aliases=@('華邦電','2344') }
+    @{ name='群創';   aliases=@('群創','3481') }
+    @{ name='友達';   aliases=@('友達','2409') }
+    @{ name='廣達';   aliases=@('廣達','2382') }
+    @{ name='緯創';   aliases=@('緯創','3231') }
+    @{ name='仁寶';   aliases=@('仁寶','2324') }
+    @{ name='富邦金'; aliases=@('富邦金','2881') }
+    @{ name='國泰金'; aliases=@('國泰金','2882') }
+    @{ name='中華電'; aliases=@('中華電','2412') }
+    @{ name='台塑';   aliases=@('台塑','1301') }
+    @{ name='中鋼';   aliases=@('中鋼','2002') }
+    @{ name='統一';   aliases=@('統一企業','1216') }
+    @{ name='欣興';   aliases=@('欣興','3037') }
+    @{ name='金像電'; aliases=@('金像電','2368') }
+    @{ name='奇鋐';   aliases=@('奇鋐','3017') }
+    @{ name='健策';   aliases=@('健策','3653') }
+    @{ name='雙鴻';   aliases=@('雙鴻','3324') }
+    @{ name='華城';   aliases=@('華城','1519') }
+    @{ name='中興電'; aliases=@('中興電','1513') }
+    @{ name='智邦';   aliases=@('智邦','2345') }
+    @{ name='川湖';   aliases=@('川湖','2059') }
+    @{ name='世芯';   aliases=@('世芯','3661') }
+    @{ name='創意';   aliases=@('創意電子','3443') }
+    # ── US Tech ──
+    @{ name='NVIDIA'; aliases=@('NVIDIA','NVDA','輝達','英偉達') }
+    @{ name='AMD';    aliases=@('AMD','超微') }
+    @{ name='Intel';  aliases=@('Intel','INTC','英特爾') }
+    @{ name='Apple';  aliases=@('Apple','AAPL','蘋果') }
+    @{ name='Microsoft'; aliases=@('Microsoft','MSFT','微軟') }
+    @{ name='Google'; aliases=@('Google','GOOGL','GOOG','Alphabet') }
+    @{ name='Tesla';  aliases=@('Tesla','TSLA','特斯拉') }
+    @{ name='Meta';   aliases=@('Meta','META','臉書','Facebook股價') }
+    @{ name='Amazon'; aliases=@('Amazon','AMZN','亞馬遜') }
+    @{ name='Broadcom'; aliases=@('Broadcom','AVGO','博通') }
+    @{ name='Qualcomm'; aliases=@('Qualcomm','QCOM','高通') }
+    @{ name='Micron'; aliases=@('Micron','MU','美光') }
+    @{ name='ASML';   aliases=@('ASML','艾斯摩爾') }
+    @{ name='ARM';    aliases=@('ARM Holdings','安謀') }
+    @{ name='Netflix';aliases=@('Netflix','NFLX') }
+    @{ name='Palantir';aliases=@('Palantir','PLTR') }
+    # ── ETFs (Taiwan) ──
+    @{ name='0050';   aliases=@('0050','元大台灣50') }
+    @{ name='0056';   aliases=@('0056','元大高股息') }
+    @{ name='00878';  aliases=@('00878','國泰永續高股息') }
+    @{ name='00900';  aliases=@('00900','富邦特選高股息30') }
+    @{ name='00919';  aliases=@('00919','群益台灣精選高息') }
+    @{ name='00936';  aliases=@('00936','台新永續高息中小') }
+    @{ name='00929';  aliases=@('00929','復華台灣科技優息') }
+    @{ name='00940';  aliases=@('00940','元大臺灣價值高息') }
+    # ── ETFs (US) ──
+    @{ name='QQQ';    aliases=@('QQQ','那斯達克100','Nasdaq 100') }
+    @{ name='SPY';    aliases=@('SPY','S&P 500 ETF') }
+    @{ name='VOO';    aliases=@('VOO') }
+    @{ name='VTI';    aliases=@('VTI') }
+    @{ name='DIA';    aliases=@('DIA','道瓊ETF') }
+    @{ name='IWM';    aliases=@('IWM','羅素2000') }
+    @{ name='ARKK';   aliases=@('ARKK','方舟') }
+    @{ name='SMH';    aliases=@('SMH','半導體ETF') }
+    @{ name='SOXL';   aliases=@('SOXL','三倍半導體') }
+    @{ name='TQQQ';   aliases=@('TQQQ','三倍那斯達克') }
+)
+
+function Test-AliasMatch($content, $alias) {
+    # Word-boundary regex for short pure-ASCII aliases (≤ 5 chars) to avoid
+    # false positives like "PE" hitting "Apple" or "DIA" hitting "NVIDIA".
+    # Longer aliases and any string with non-ASCII (Chinese) use literal -like.
+    $isShortAscii = ($alias.Length -le 5) -and ($alias -match '^[A-Za-z0-9&]+$')
+    if ($isShortAscii) {
+        $pattern = '(?<![A-Za-z0-9])' + [regex]::Escape($alias) + '(?![A-Za-z0-9])'
+        return [regex]::IsMatch($content, $pattern, 'IgnoreCase')
+    }
+    return ($content -like "*$alias*")
+}
+
+function Compute-InvestmentLens($posts, $lensCategories, $stockList) {
+    $catPostCount = [ordered]@{}
+    foreach ($cat in $lensCategories.Keys) { $catPostCount[$cat] = 0 }
+    $indicatorCounts = @{}
+    $stockCounts = @{}
+    $totalPosts = $posts.Count
+
+    foreach ($p in $posts) {
+        $c = if ($p.content) { [string]$p.content } else { '' }
+        if (-not $c) { continue }
+
+        # Per-category: count posts that contain ANY keyword in that category
+        foreach ($cat in $lensCategories.Keys) {
+            $hit = $false
+            foreach ($kw in $lensCategories[$cat]) {
+                if (Test-AliasMatch $c $kw) {
+                    $hit = $true
+                    if (-not $indicatorCounts.ContainsKey($kw)) { $indicatorCounts[$kw] = 0 }
+                    $indicatorCounts[$kw]++
+                }
+            }
+            if ($hit) { $catPostCount[$cat]++ }
+        }
+
+        # Per-stock: count posts mentioning each stock (any alias)
+        foreach ($s in $stockList) {
+            foreach ($alias in $s.aliases) {
+                if (Test-AliasMatch $c $alias) {
+                    if (-not $stockCounts.ContainsKey($s.name)) { $stockCounts[$s.name] = 0 }
+                    $stockCounts[$s.name]++
+                    break
+                }
+            }
+        }
+    }
+
+    # Category shares (posts that mention each category / total posts)
+    $catShares = [ordered]@{}
+    foreach ($cat in $catPostCount.Keys) {
+        $catShares[$cat] = if ($totalPosts -gt 0) { [math]::Round($catPostCount[$cat] / $totalPosts, 3) } else { 0 }
+    }
+
+    # Top indicators (across all 5 categories)
+    $topInd = @($indicatorCounts.GetEnumerator() | Sort-Object Value -Descending | Select-Object -First 15 | ForEach-Object {
+        [PSCustomObject]@{ indicator = $_.Key; count = $_.Value }
+    })
+
+    # Top stocks
+    $topStocks = @($stockCounts.GetEnumerator() | Sort-Object Value -Descending | Select-Object -First 20 | ForEach-Object {
+        [PSCustomObject]@{ stock = $_.Key; count = $_.Value }
+    })
+
+    # Dominant lens label
+    $catSorted = @($catPostCount.GetEnumerator() | Sort-Object Value -Descending)
+    $dominant = if ($catSorted.Count -gt 0) { $catSorted[0].Name } else { $null }
+    $secondary = if ($catSorted.Count -gt 1) { $catSorted[1].Name } else { $null }
+    $top1Count = if ($catSorted.Count -gt 0) { $catSorted[0].Value } else { 0 }
+    $top2Count = if ($catSorted.Count -gt 1) { $catSorted[1].Value } else { 0 }
+
+    $lensLabel = if ($top1Count -eq 0) { '無顯著傾向' }
+                 elseif ($top2Count / [math]::Max(1, $top1Count) -lt 0.5) { "$dominant 型" }
+                 elseif ($top2Count / [math]::Max(1, $top1Count) -lt 0.8) { "$dominant 主、$secondary 輔" }
+                 else { "$dominant + $secondary 混合型" }
+
+    return [ordered]@{
+        category_post_count = $catPostCount
+        category_post_share = $catShares
+        top_indicators = $topInd
+        top_stocks = $topStocks
+        dominant_lens = $dominant
+        secondary_lens = $secondary
+        lens_label = $lensLabel
+        total_indicator_mentions = ($indicatorCounts.Values | Measure-Object -Sum).Sum
+        unique_indicators = $indicatorCounts.Count
+        unique_stocks = $stockCounts.Count
+    }
+}
+
+# ────────────────────────────────────────────────────────────
 # Per-platform deep aggregation
 # ────────────────────────────────────────────────────────────
 function Build-Metrics($platform, $posts, $kolCfg, $themesObj, $themeKeys, $domainCfg) {
@@ -142,6 +314,9 @@ function Build-Metrics($platform, $posts, $kolCfg, $themesObj, $themeKeys, $doma
                     elseif ($peakMonth.n -gt ($avgPostsPerMonth * 2.5)) { '爆發集中型' }
                     elseif ($activeMonthRatio -ge 0.5) { '間歇型' }
                     else { '稀疏型' }
+
+    # ── Investment lens analysis (五大派系 + 指標 + 個股) ──
+    $investmentLens = Compute-InvestmentLens $allPosts $script:InvestmentLens $script:StockMentions
 
     # ── Theme analysis ──
     $themeCounts = [ordered]@{}
@@ -323,6 +498,8 @@ function Build-Metrics($platform, $posts, $kolCfg, $themesObj, $themeKeys, $doma
             trend = $trend
             cadence_label = $cadenceLabel
         }
+
+        investment_lens = $investmentLens
 
         themes = [ordered]@{
             distribution = $themeSorted

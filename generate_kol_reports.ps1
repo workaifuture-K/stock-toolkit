@@ -63,6 +63,49 @@ function Bar-Html($items, $maxN = 12, $hideZero = $true) {
     return $sb.ToString()
 }
 
+# Display percentage-based bar (for category_post_share)
+function Bar-Pct-Html($items, $maxN = 8) {
+    if (-not $items) { return '<p class="muted">（無資料）</p>' }
+    $entries = @()
+    foreach ($prop in $items.PSObject.Properties) {
+        $v = [double]$prop.Value
+        $entries += [PSCustomObject]@{ key=$prop.Name; value=$v }
+    }
+    $entries = @($entries | Sort-Object value -Descending | Select-Object -First $maxN)
+    if ($entries.Count -eq 0) { return '<p class="muted">（無資料）</p>' }
+    $maxVal = ($entries | Measure-Object value -Maximum).Maximum
+    if ($maxVal -le 0) { $maxVal = 1 }
+    $sb = New-Object System.Text.StringBuilder
+    [void]$sb.Append('<table class="bar-table">')
+    foreach ($e in $entries) {
+        $pctOfMax = [math]::Round(100 * $e.value / $maxVal, 1)
+        $pctDisplay = "$([math]::Round($e.value * 100, 1))%"
+        [void]$sb.Append("<tr><td class='bar-label'>$(HtmlEscape $e.key)</td><td class='bar-track'><div class='bar-fill' style='width:$pctOfMax%'></div></td><td class='bar-value'>$pctDisplay</td></tr>")
+    }
+    [void]$sb.Append('</table>')
+    return $sb.ToString()
+}
+
+# Display top items from an array of {keyField, valueField} PSObjects
+function Bar-Items-Html($items, $keyField, $valueField, $maxN = 15) {
+    if (-not $items) { return '<p class="muted">（無資料）</p>' }
+    $list = @($items)
+    if ($list.Count -eq 0) { return '<p class="muted">（無資料）</p>' }
+    $list = @($list | Select-Object -First $maxN)
+    $maxVal = ($list | ForEach-Object { [int]$_.$valueField } | Measure-Object -Maximum).Maximum
+    if ($maxVal -le 0) { $maxVal = 1 }
+    $sb = New-Object System.Text.StringBuilder
+    [void]$sb.Append('<table class="bar-table">')
+    foreach ($e in $list) {
+        $v = [int]$e.$valueField
+        $k = [string]$e.$keyField
+        $pctOfMax = [math]::Round(100 * $v / $maxVal, 1)
+        [void]$sb.Append("<tr><td class='bar-label'>$(HtmlEscape $k)</td><td class='bar-track'><div class='bar-fill' style='width:$pctOfMax%'></div></td><td class='bar-value'>$v</td></tr>")
+    }
+    [void]$sb.Append('</table>')
+    return $sb.ToString()
+}
+
 function Sparkline-Html($monthDist) {
     if (-not $monthDist) { return '' }
     $entries = @()
@@ -110,6 +153,55 @@ function Concl-Cadence($m) {
     return "$sent1 $sent2 $cadenceInsight"
 }
 
+function Concl-Lens($m) {
+    $lens = $m.investment_lens
+    if (-not $lens -or $lens.total_indicator_mentions -eq 0) {
+        return "本平台貼文中未偵測到明顯的投資分析語彙 — 內容可能偏向心情記錄、生活分享或非投資題材。"
+    }
+
+    # Top 2 lens categories (with share %)
+    $lensEntries = @()
+    foreach ($prop in $lens.category_post_share.PSObject.Properties) {
+        $lensEntries += [PSCustomObject]@{ name=$prop.Name; share=[double]$prop.Value }
+    }
+    $lensSorted = @($lensEntries | Sort-Object share -Descending | Where-Object { $_.share -gt 0 })
+    $top2Str = @()
+    foreach ($e in ($lensSorted | Select-Object -First 2)) {
+        $top2Str += "<b>$($e.name)</b>（$(Pct $e.share) 貼文觸及）"
+    }
+
+    # Top 3 indicators (concrete vocab)
+    $topInd = @($lens.top_indicators | Select-Object -First 3)
+    $indStr = ($topInd | ForEach-Object { "<b>$(HtmlEscape $_.indicator)</b>（$($_.count)）" }) -join '、'
+
+    # Top 3 stocks
+    $topStk = @($lens.top_stocks | Select-Object -First 3)
+    $stkStr = if ($topStk.Count -gt 0) { ($topStk | ForEach-Object { "<b>$(HtmlEscape $_.stock)</b>（$($_.count)）" }) -join '、' } else { '無顯著個股提及' }
+
+    $sent1 = "本平台分析面向以 $($top2Str -join '、') 為主，整體判定為 <b>$($lens.lens_label)</b>。"
+    $sent2 = "最常出現的具體語彙：$indStr；提及最多的個股／ETF：$stkStr。"
+
+    # Count categories with ≥30% share — if 3+ are high, KOL is "comprehensive coverage"
+    $highCats = @($lensSorted | Where-Object { $_.share -ge 0.3 })
+    $isComprehensive = $highCats.Count -ge 3
+
+    if ($isComprehensive) {
+        $catNames = ($highCats | ForEach-Object { $_.name }) -join '、'
+        $insight = "這位 KOL 在本平台採 <b>全面覆蓋型</b> 操作 — $catNames 等多個面向都有顯著占比，單篇內容常同時談財務、資金、心法。受眾若同時關心多個層面，這位 KOL 可作為一站式內容源。"
+    } else {
+        $insight = switch ($lens.dominant_lens) {
+            '基本面' { "這位 KOL 看一檔股票好壞，主要從「公司賺不賺錢」切入 — 看的是營收、毛利率、EPS、法說會等財報數字。內容適合長線投資者參考。" }
+            '籌碼面' { "這位 KOL 看一檔股票好壞，主要從「誰在買、誰在賣」切入 — 看的是外資、投信、融資融券、大戶動向等資金流向。內容適合追隨法人腳步的中短線操作者。" }
+            '技術面' { "這位 KOL 看一檔股票好壞，主要從「線型走勢」切入 — 看的是均線、K 線、MACD、KD、支撐壓力等技術指標。內容適合波段／當沖型操作者。" }
+            '消息面' { "這位 KOL 看一檔股票好壞，主要從「總體環境與事件」切入 — 看的是 Fed 升降息、CPI、地緣政治、油價匯率等宏觀變數。內容適合關注大環境輪動者。" }
+            '心理面' { "這位 KOL 內容以「投資心法 + 紀律」為主軸 — 較少談特定股票數據，較多談部位控管、停損停利、情緒管理。內容適合建立投資觀念者。" }
+            default { "" }
+        }
+    }
+
+    return "$sent1 $sent2 $insight"
+}
+
 function Concl-Themes($m) {
     $th = $m.themes
     $top3 = @()
@@ -119,17 +211,12 @@ function Concl-Themes($m) {
         $top3 += "<b>$($prop.Name)</b>（$($prop.Value) 篇）"
         $i++; if ($i -ge 3) { break }
     }
-    $sent1 = "主題前三：$($top3 -join '、')，合計占題材命中總數 <b>$(Pct $th.top3_concentration)</b>（$($th.concentration_label)）。"
-    $sent2 = "在領域定義的 12 個主題中，命中 <b>$($th.non_zero_count)</b> 個（廣度：$($th.breadth_label)）；首要主題「$($th.top_theme)」單獨命中 $(Pct $th.top_theme_share) 的貼文。"
-    $insight = ''
-    if ($th.top3_concentration -ge 0.7) {
-        $insight = "高度集中代表 KOL 在此平台**有明確內容專長**，受眾預期穩定；但跨主題覆蓋有限。"
-    } elseif ($th.non_zero_count -ge 9) {
-        $insight = "廣泛涵蓋代表 KOL 在此平台**做的是大盤觀察 / 綜合評論**，沒有明顯偏好；受眾期待多元視角。"
-    } else {
-        $insight = "中間型態 — 既有主軸題材也有外溢，是「主題 + 補充」型內容結構。"
+    if ($top3.Count -eq 0) {
+        return "本平台貼文未命中任何領域主題定義，可能為非該領域內容或樣本太少。"
     }
-    return "$sent1 $sent2 $insight"
+    $sent1 = "次級主題前三：$($top3 -join '、')，合計占題材命中總數 <b>$(Pct $th.top3_concentration)</b>（$($th.concentration_label)）。"
+    $sent2 = "在領域定義的 12 個主題中，命中 <b>$($th.non_zero_count)</b> 個（廣度：$($th.breadth_label)）。"
+    return "$sent1 $sent2"
 }
 
 function Concl-Temporal($m) {
@@ -225,36 +312,6 @@ function Concl-Hashtag($m) {
     return "$sent1 $sent2 $insight"
 }
 
-function Concl-Disclaimer($m) {
-    $d = $m.disclaimer
-    $sent1 = "免責聲明覆蓋率 <b>$(Pct $d.coverage)</b>（$($d.coverage_label)）。"
-    # Trend
-    $years = @($d.by_year.PSObject.Properties)
-    $trendInsight = ''
-    if ($years.Count -ge 2) {
-        $first = [double]$years[0].Value; $last = [double]$years[-1].Value
-        $change = $last - $first
-        if ($change -ge 0.2) {
-            $trendInsight = "由 $($years[0].Name) 的 $(Pct $first) 增加至 $($years[-1].Name) 的 $(Pct $last) — 合規意識**明顯上升**，反映該 KOL 進入「對外負責任」階段。"
-        } elseif ($change -le -0.2) {
-            $trendInsight = "由 $($years[0].Name) 的 $(Pct $first) 下降至 $($years[-1].Name) 的 $(Pct $last) — 合規意識**下降**，可能因為受眾熟悉度提升而省略；需要評估法律風險。"
-        } else {
-            $trendInsight = "歷年覆蓋率穩定（$($years[0].Name) $(Pct $first) → $($years[-1].Name) $(Pct $last)），合規行為一致。"
-        }
-    } else {
-        $trendInsight = "資料時間軸不足以判斷歷年趨勢。"
-    }
-    $sent2 = $trendInsight
-    $insight = if ($d.coverage -ge 0.85) {
-        "幾乎全附免責反映 KOL 對法律 / 監管敏感度高，內容適合 B2B 引用、學術 / 研究參考。"
-    } elseif ($d.coverage -ge 0.3) {
-        "多數附上但非全部，可能依平台 / 內容類型選擇性附加，屬「合理保守」型。"
-    } elseif ($d.coverage -le 0.1) {
-        "幾乎不附免責反映該 KOL 在此平台採「個人觀點記錄」立場，較不適合作為公開引用的權威來源。"
-    } else { "部分附上，立場介於個人記錄與專業聲明之間。" }
-    return "$sent1 $sent2 $insight"
-}
-
 # ────────────────────────────────────────────────────────────
 # Generate per-platform report
 # ────────────────────────────────────────────────────────────
@@ -276,15 +333,30 @@ function Generate-PlatformReport($platform, $platformLabel, $accent) {
 
     $cOverview = Concl-Overview $m $platformLabel
     $cCadence  = Concl-Cadence  $m
+    $cLens     = Concl-Lens     $m
     $cThemes   = Concl-Themes   $m
     $cTemporal = Concl-Temporal $m
     $cLength   = Concl-Length   $m
     $cPlatSpec = Concl-PlatformSpecific $m $platform
     $cHashtag  = Concl-Hashtag  $m
-    $cDisc     = Concl-Disclaimer $m
 
     $themeBar = Bar-Html $m.themes.distribution 12
     $spark = Sparkline-Html $m.temporal.monthly_distribution
+
+    # Investment lens bars
+    if ($m.investment_lens) {
+        $lensBar      = Bar-Pct-Html  $m.investment_lens.category_post_share 5
+        $indicatorBar = Bar-Items-Html $m.investment_lens.top_indicators 'indicator' 'count' 15
+        $stockBar     = Bar-Items-Html $m.investment_lens.top_stocks 'stock' 'count' 20
+        $lensLabel    = [string]$m.investment_lens.lens_label
+        $lensSummary  = "整體判定：<b>$(HtmlEscape $lensLabel)</b> · 共出現 <b>$($m.investment_lens.total_indicator_mentions)</b> 次具體語彙、<b>$($m.investment_lens.unique_indicators)</b> 種不同指標、提及 <b>$($m.investment_lens.unique_stocks)</b> 支不同個股／ETF。"
+    } else {
+        $lensBar = '<p class="muted">（無資料）</p>'
+        $indicatorBar = '<p class="muted">（無資料）</p>'
+        $stockBar = '<p class="muted">（無資料）</p>'
+        $lensLabel = ''
+        $lensSummary = ''
+    }
 
     # Hashtag chips
     $tagChips = ''
@@ -309,15 +381,6 @@ function Generate-PlatformReport($platform, $platformLabel, $accent) {
         $platSpecHtml = "<table class='kv-table'><tr><td>短文（&lt;100）</td><td><b>$($ps.short_posts)</b>（$(Pct $ps.short_share)）</td></tr><tr><td>中文（100-300）</td><td>$($ps.medium_posts)</td></tr><tr><td>長文（≥300）</td><td><b>$($ps.long_posts)</b>（$(Pct $ps.long_share)）</td></tr><tr><td>結構定位</td><td><b>$($ps.type_label)</b></td></tr></table>"
     }
 
-    # Disclaimer by-year table
-    $discYearHtml = '<p class="muted">無逐年資料</p>'
-    if ($m.disclaimer.by_year) {
-        $rows = ''
-        foreach ($prop in $m.disclaimer.by_year.PSObject.Properties) {
-            $rows += "<tr><td>$($prop.Name)</td><td>$(Pct $prop.Value)</td></tr>"
-        }
-        if ($rows) { $discYearHtml = "<table class='kv-table'><tr><th>年份</th><th>免責覆蓋率</th></tr>$rows</table>" }
-    }
 
     $html = @"
 <!DOCTYPE html>
@@ -342,6 +405,7 @@ body { font-family: -apple-system, "Segoe UI", "Microsoft JhengHei", "PingFang T
 section { margin: 28px 0; padding: 22px 24px; background: var(--card); border-radius: 10px; border: 1px solid var(--border); }
 section h2 { margin: 0 0 14px; font-size: 18px; color: #fff; }
 section h2 .num { color: var(--accent); margin-right: 8px; }
+section h3 { margin: 18px 0 6px; font-size: 15px; color: #facc15; font-weight: 700; border-left: 3px solid #facc15; padding-left: 10px; }
 .conclusion { background: rgba(255,87,87,0.06); border-left: 3px solid var(--accent); padding: 14px 16px; margin-top: 16px; font-size: 14px; color: var(--text); border-radius: 4px; line-height: 1.8; }
 .conclusion::before { content: "結論："; font-weight: 700; color: var(--accent); margin-right: 6px; display: block; margin-bottom: 4px; }
 .muted { color: var(--muted); font-size: 13px; }
@@ -414,9 +478,27 @@ table.bar-table td { padding: 4px 6px; border: none; }
 </section>
 
 <section>
-<h2><span class="num">三、</span>內容主題分佈</h2>
+<h2><span class="num">三、</span>投資視角分析（這位 KOL 看什麼決定股票好壞）</h2>
+<p class="muted" style="margin-top:-8px;">$lensSummary</p>
+
+<h3 style="margin-top:18px;">3-1　五大分析面向分佈</h3>
+<p class="muted" style="margin-top:-4px;">每篇貼文若提及任一面向關鍵字即計入。同一篇可被多個面向計入（一篇文章可能同時談基本面 + 籌碼面）。</p>
+$lensBar
+
+<h3 style="margin-top:18px;">3-2　常用具體指標 Top 15</h3>
+<p class="muted" style="margin-top:-4px;">直接顯示原文用詞 — KOL 實際用哪些字眼判斷股票。</p>
+$indicatorBar
+
+<h3 style="margin-top:18px;">3-3　重點個股 ／ ETF 提及 Top 20</h3>
+<p class="muted" style="margin-top:-4px;">該 KOL 在此平台最常提及的個股／ETF（含台股、美股、ETF、中文+代碼+英文別名比對）。</p>
+$stockBar
+
+<h3 style="margin-top:18px;">3-4　內容主題分佈（次級觀察）</h3>
+<p class="muted" style="margin-top:-4px;">領域 12 大主題的命中分佈 — 觀察題材廣度的補充視角。</p>
 $themeBar
-<div class="conclusion">$cThemes</div>
+<div class="conclusion" style="margin-top:8px;">$cThemes</div>
+
+<div class="conclusion" style="margin-top:14px;">$cLens</div>
 </section>
 
 <section>
@@ -455,19 +537,10 @@ $platSpecHtml
 <div class="conclusion">$cHashtag</div>
 </section>
 
-<section>
-<h2><span class="num">八、</span>免責與專業性</h2>
-<div class="kv-grid">
-  <div class="kv-card"><div class="kv-label">免責覆蓋率</div><div class="kv-value">$(Pct $m.disclaimer.coverage)</div></div>
-  <div class="kv-card"><div class="kv-label">覆蓋率定位</div><div class="kv-value small">$($m.disclaimer.coverage_label)</div></div>
-</div>
-<h3 style="font-size:14px;margin-top:18px;color:var(--muted);">逐年覆蓋率變化</h3>
-$discYearHtml
-<div class="conclusion">$cDisc</div>
-</section>
-
 <div class="footnote">
-  方法論：本報告為 StockHero 自動產出之 KOL 個別分析。資料來源 = $Author 的 $platformLabel 公開貼文（書籤擷取，含解碼與日期回補）。主題分類依領域共用 themes 定義匹配；長度分箱以字元數計；個人品牌標籤判斷依 hashtag 是否含 KOL 帳號或暱稱字串；免責關鍵字含「不構成投資建議 / 僅供參考 / 個人觀點 / 投資風險」等。每段結論為數值門檻判斷產出，非人工撰寫。
+  方法論：本報告為 StockHero 自動產出之 KOL 個別分析。資料來源 = $Author 的 $platformLabel 公開貼文（書籤擷取，含解碼與日期回補）。<br>
+  <b>投資視角分析（第三章）</b>：根據貼文內容直接比對五大派系（基本面／籌碼面／技術面／消息面／心理面）的關鍵字字典，每篇若提及任一字眼即計入對應面向；同一篇可被多個面向計入。「常用指標」為原始用詞排序、「個股提及」依中文名稱、4位代碼、英文別名同時比對。<br>
+  <b>其他章節</b>：主題分類依領域共用 themes 定義匹配；長度分箱以字元數計；個人品牌標籤判斷依 hashtag 是否含 KOL 帳號或暱稱字串。每段結論為數值門檻判斷產出，非人工撰寫。
 </div>
 
 </div>
