@@ -20,8 +20,9 @@ You also need:
 2. Make sure your **bookmarks bar is visible** (Chrome: Ctrl+Shift+B).
 3. Drag the three bookmarks onto your bookmarks bar:
    - 📸 **IG 擷取 v8.1**
-   - 🧵 **Threads 擷取**
-   - 📘 **FB 擷取**
+   - 🧵 **Threads 擷取 v3.5**
+   - 📘 **FB 擷取 v5.4**
+   - 📥 **IG / Threads / FB 下載**（備用，剪貼簿失敗時用）
 
 You only do this once per browser.
 
