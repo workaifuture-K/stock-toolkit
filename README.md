@@ -71,8 +71,9 @@ TL;DR:
 | `discover_kol_profile.ps1` | TF-IDF + era detection → profile draft (KOL-specific config) |
 | `build_kol_db.ps1` | Canonical → structured Database (App-ready JSON) |
 | `generate_kol_reports.ps1` | Database → 3 platform reports + KOL index + domain index |
+| `analyze_monetization.ps1` | (opt-in) Sponsorship scan + monetization analysis → `monetization_report.html`. Taiwan-finance-KOL flavored template; Section 5 has `[請填寫]` placeholders |
 | `cleanup_canonical.ps1` | Maintenance: URL-aware + no-URL prefix dedup |
-| `run_kol.ps1` | One-shot pipeline wrapper (recover → merge → [discover →] build → generate) |
+| `run_kol.ps1` | One-shot pipeline wrapper (recover → merge → [discover →] build → generate → `[monetization →]`) |
 | `domains/tw_stock_kol/domain.json` | Domain template (preserves 12 financial themes; empty kols array) |
 
 ---

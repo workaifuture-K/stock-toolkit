@@ -101,6 +101,7 @@ Press Enter when profile is ready to analyze
 The pipeline then runs:
 4. `build_kol_db` — generate the structured Database
 5. `generate_kol_reports` — generate 3 platform reports + KOL index + domain index
+6. **(opt-in)** `analyze_monetization` — generate `monetization_report.html` if you passed `-Monetization`
 
 ---
 
@@ -113,6 +114,27 @@ Start-Process "domains\tw_stock_kol\kols\<kol_handle>\reports\index.html"
 # Or the domain-level index (lists all KOLs in the domain)
 Start-Process "domains\tw_stock_kol\index.html"
 ```
+
+### 變現分析報告（opt-in）
+
+預設 pipeline 只生成 3 個平台報告。若要 +1 變現分析報告：
+
+```powershell
+.\run_kol.ps1 -Author <kol_handle> -Discover -Monetization
+# 或 daily refresh 也可以加：
+.\run_kol.ps1 -Author <kol_handle> -Monetization
+```
+
+產出 `reports\monetization_report.html` 含 5 區段：
+1. **業配掃描** — 按 `$sponsors` 列表抓 Taiwan 券商/投信/平台品牌 mention（Tier A/B/C/D）
+2. **內容強項與缺口** — 12 個主題分布 → 哪些可包裝商品 / 哪些是缺口
+3. **產文節奏可持續性** — 月度趨勢、近 3 個月成長率、燃燒風險評估
+4. **平台分工** — IG vs FB vs Threads 風格對比 → 各自變現定位
+5. **競品定位** — Taiwan ETF KOL 競品表 + 護城河/弱點/變現建議（placeholder 待填寫）
+
+⚠️ **客製化提示**：腳本目前以 Taiwan finance KOL 為基準範本。
+- **Section 1 `$sponsors`** 是 Taiwan 券商/投信/平台名單，跨域請改 `analyze_monetization.ps1` 的 `$sponsors` 區塊。
+- **Section 5 競品表 + placeholder** 預設為 Taiwan ETF KOL 競品。其他細分（美股 / Crypto / 非財經）請編輯競品表 + 填寫各 `[請填寫]` 區塊。
 
 ---
 

@@ -16,6 +16,10 @@
 #
 # CI / automation (no human prompt):
 #   .\run_kol.ps1 -Author zhao1945 -Discover -NoPause
+#
+# Include monetization analysis (Taiwan finance KOL flavor):
+#   .\run_kol.ps1 -Author zhao1945 -Monetization
+#   # ↑ Section 5 (競品/護城河/變現建議) 含 placeholder 待人工填寫
 # ============================================================
 
 param(
@@ -36,7 +40,12 @@ param(
     [int]$MaxFetch = 200,
 
     # Skip the human review pause after discover (for automation)
-    [switch]$NoPause
+    [switch]$NoPause,
+
+    # Also run analyze_monetization.ps1 to produce monetization_report.html.
+    # Default OFF — the script's Section 5 (competitor positioning) is
+    # Taiwan-finance-KOL flavored and requires manual customization for other domains.
+    [switch]$Monetization
 )
 
 $base = $PSScriptRoot
@@ -151,8 +160,21 @@ if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) {
     Write-Host "report generation failed (exit $LASTEXITCODE)" -ForegroundColor Red; exit 1
 }
 
+# === Step (optional): monetization analysis ===
+if ($Monetization) {
+    Step ($step + 1) ($totalSteps + 1) "analyze_monetization (Taiwan-finance template)"
+    & "$base\analyze_monetization.ps1" -Domain $Domain -Author $Author
+    if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) {
+        Write-Host "monetization analysis failed (exit $LASTEXITCODE)" -ForegroundColor Yellow
+        Write-Host "(pipeline still considered complete — monetization is supplementary)"
+    }
+}
+
 Write-Host ""
 Write-Host "===== Pipeline complete =====" -ForegroundColor Green
 Write-Host "Database: domains\$Domain\kols\$Author\database\"
 Write-Host "Reports : domains\$Domain\kols\$Author\reports\"
+if ($Monetization) {
+    Write-Host "        + monetization_report.html (Section 5 待人工填寫 placeholder)"
+}
 Write-Host "Domain  : domains\$Domain\index.html"
