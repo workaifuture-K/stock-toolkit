@@ -66,7 +66,7 @@ footer {
 <section>
   <a class="cta" href="https://github.com/workaifuture-K/stock-toolkit/archive/refs/heads/main.zip">📥 下載 ZIP（含 PowerShell 腳本）</a>
   <a class="cta" href="install-bookmarklets.html">📌 安裝書籤（開始抓資料）</a>
-  <a class="cta secondary" href="QUICKSTART.md">⏱️ 5 分鐘上手指南</a>
+  <a class="cta secondary" href="https://github.com/workaifuture-K/stock-toolkit/blob/main/QUICKSTART.md" target="_blank">⏱️ 5 分鐘上手指南（GitHub 渲染）</a>
   <a class="cta secondary" href="https://github.com/workaifuture-K/stock-toolkit">📦 GitHub Repo</a>
 </section>
 
@@ -105,7 +105,21 @@ footer {
   <div class="card">
     <strong>3. 跑 pipeline + 看報告</strong><br>
     <code>.\run_kol.ps1 -Author &lt;kol&gt; -Discover</code><br>
-    產出位置：<code>domains/&lt;domain&gt;/kols/&lt;kol&gt;/reports/</code>
+    產出位置：<code>domains/&lt;domain&gt;/kols/&lt;kol&gt;/reports/</code><br>
+    <span class="muted" style="font-size:12px">出 4 個 HTML：KOL 索引 + Threads/IG/FB 各自 8 區段內容分析</span>
+  </div>
+  <div class="card" style="border-left:3px solid #ffd24d">
+    <strong>3.5（選用）變現分析報告</strong><br>
+    <code>.\run_kol.ps1 -Author &lt;kol&gt; -Discover -Monetization</code><br>
+    多產一個 <code>monetization_report.html</code>，含 5 區段：
+    <ul style="margin:6px 0 0 18px;font-size:13px">
+      <li>業配貼文掃描（4 個信心等級：明標行銷 / 品牌+CTA / 品牌 mention / 純 CTA）</li>
+      <li>內容強項與缺口（主題分布反推可包裝的商品）</li>
+      <li>產文節奏可持續性（月度趨勢、燃燒風險評估）</li>
+      <li>平台分工（IG vs FB vs Threads 風格與變現定位差異）</li>
+      <li>競品定位（Taiwan finance KOL 模板，部分區段 <code>[請填寫]</code> 待人工補）</li>
+    </ul>
+    <span class="muted" style="font-size:12px">⚠️ Section 1 業配品牌列表 + Section 5 競品名單以 Taiwan ETF KOL 為基準，跨域請編輯 <code>analyze_monetization.ps1</code></span>
   </div>
 </section>
 

@@ -1,4 +1,4 @@
-# Quick Start — 5 minutes to first KOL report
+﻿# Quick Start — 5 minutes to first KOL report
 
 ## Prerequisites check
 
