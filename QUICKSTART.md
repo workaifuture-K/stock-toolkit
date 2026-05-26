@@ -137,6 +137,8 @@ When the KOL posts new content and you want to update reports:
 | "Auto-detected domain" errors | Make sure exactly one folder exists under `domains/` |
 | Bookmark does nothing on IG | Confirm you installed **v8.1** (label shows "v8.1"); old v7.x bookmarks broke after IG updates |
 | `save_clipboard` says clipboard empty | Click 複製 on the panel before running the script |
+| 複製按鈕看似成功（彈出「已複製 X 筆！」）但 `save_clipboard` 抓到別的內容 | 剪貼簿管理器（PowerToys / Ditto / Win+V 歷史 pin）攔截了寫入。改用 install-bookmarklets.html 下方的「📥 備用：下載書籤」直接下載 JSON 檔，繞開剪貼簿 |
+| 大量資料時 `navigator.clipboard.writeText` 失敗（特別是 FB 數百篇以上） | 同上，用「📥 下載書籤」直接從 localStorage 下載成檔案 |
 | `recover_dates` web fetch slow | Default fetches up to 200 URLs at 1.5–3s each. Use `-MaxFetch 50` to cap; use `-NoFetch` to skip entirely |
 | Chinese mojibake in PowerShell output | Run `chcp 65001` in PowerShell, or save your .ps1 files as UTF-8 with BOM |
 | Reports show 0 posts for one platform | That platform wasn't scraped yet (no raw/<platform>.json); run the bookmark + save_clipboard |

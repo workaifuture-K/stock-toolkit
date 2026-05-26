@@ -104,6 +104,7 @@ This toolkit scrapes **public** posts via authenticated browser sessions. You ar
 - IG public embed page (used as date fallback) requires `facebookexternalhit` UA — if Meta changes this, web fetch may degrade
 - Threads/FB bookmark sessions depend on platform's DOM structure; UI changes may require bookmark rev
 - PowerShell scripts assume UTF-8 with BOM (PS 5.1 quirk); when adding new scripts, save with BOM
+- Bookmarklet `navigator.clipboard.writeText` 寫入有時會被剪貼簿管理工具（PowerToys / Ditto / Win+V 歷史）攔截或在大量資料時失敗 → install-bookmarklets.html 提供「📥 備用：下載書籤」(IG / Threads / FB) 直接從 localStorage 下載 JSON 檔，繞開剪貼簿
 
 ---
 

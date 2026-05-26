@@ -107,5 +107,36 @@ a.bm.diag{background:#0891b2}
 </div>
 </div>
 
+<div class="platform">
+<h2>📥 備用：下載書籤（剪貼簿失敗時用）</h2>
+<p class="summary" style="margin-bottom:12px">「複製」按鈕沒生效時用這組（瀏覽器擋 <code>navigator.clipboard</code> / 剪貼簿管理器 pin 住其他內容 / 資料過大）。直接從 <code>localStorage</code> 下載 JSON 檔案，完全繞開剪貼簿。下載後手動改名（<code>facebook.json</code> / <code>instagram_main.json</code> / <code>threads.json</code>）並移到 <code>domains/&lt;d&gt;/kols/&lt;a&gt;/raw/</code> 即可。</p>
+<div class="bmgrid">
+<div class="bmblock">
+  <div class="bmrow"><a class="bm ig" href="javascript:(function()%7Bvar%20prefix%3D'_ig_'%3Bvar%20keys%3DObject.keys(localStorage).filter(function(x)%7Bif(x.indexOf(prefix)!%3D%3D0)return%20false%3Bif(x.indexOf('_ig_urls_')%3D%3D%3D0)return%20false%3B%20if(x.indexOf('_ig_phase_')%3D%3D%3D0)return%20false%3B%20if(x.indexOf('_ig_failed_')%3D%3D%3D0)return%20false%3Breturn%20true%3B%7D)%3Bif(keys.length%3D%3D%3D0)%7Balert('%E6%B2%92%E6%89%BE%E5%88%B0%20'%2Bprefix%2B'%20%E8%B3%87%E6%96%99%5Cn%E8%AB%8B%E5%85%88%E8%B7%91%20IG%20%E6%93%B7%E5%8F%96%E6%9B%B8%E7%B1%A4')%3Breturn%7Dvar%20key%3Dkeys%5B0%5D%3Bif(keys.length%3E1)%7Bvar%20p%3Dprompt('%E6%89%BE%E5%88%B0%E5%A4%9A%E7%AD%86%EF%BC%8C%E8%AB%8B%E9%81%B8%20key%3A%5Cn'%2Bkeys.join('%5Cn')%2Ckeys%5B0%5D)%3Bif(!p)return%3Bkey%3Dp%7Dvar%20raw%3DlocalStorage.getItem(key)%3Bvar%20arr%3Btry%7Bvar%20o%3DJSON.parse(raw)%3Barr%3DArray.isArray(o)%3Fo%3AObject.values(o)%7Dcatch(e)%7Balert('JSON%20%E8%A7%A3%E6%9E%90%E5%A4%B1%E6%95%97%3A%20'%2Be.message)%3Breturn%7Darr.sort(function(a%2Cb)%7Breturn%20(b.date%7C%7C'').localeCompare(a.date%7C%7C'')%7D)%3Bvar%20data%3DJSON.stringify(arr%2Cnull%2C2)%3Bvar%20b%3Dnew%20Blob(%5Bdata%5D%2C%7Btype%3A'application%2Fjson%3Bcharset%3Dutf-8'%7D)%3Bvar%20u%3DURL.createObjectURL(b)%3Bvar%20a%3Ddocument.createElement('a')%3Ba.href%3Du%3Ba.download%3Dkey%2B'.json'%3Bdocument.body.appendChild(a)%3Ba.click()%3Bdocument.body.removeChild(a)%3BsetTimeout(function()%7BURL.revokeObjectURL(u)%7D%2C1000)%3Balert('%E5%B7%B2%E4%B8%8B%E8%BC%89%20'%2Bkey%2B'.json%EF%BC%8C%E5%85%B1%20'%2Barr.length%2B'%20%E7%AF%87%5Cn%E6%9F%A5%E7%9C%8B%E3%80%8C%E4%B8%8B%E8%BC%89%E3%80%8D%E8%B3%87%E6%96%99%E5%A4%BE')%7D)()">📥 IG 下載</a></div>
+  <p class="summary">從 <code>_ig_&lt;author&gt;</code> 讀資料，做 Object.values + 日期降序排序，輸出 JSON 陣列。自動排除 _ig_urls_/_ig_phase_/_ig_failed_ 等輔助 key。</p>
+  <details class="help">
+    <summary>📖 操作說明</summary>
+    <ol><li>先在 IG 個人頁跑 📸 IG 擷取書籤，等抓完</li><li>不用按「複製」，直接點此書籤</li><li>alert「已下載 _ig_&lt;author&gt;.json，共 X 篇」→ 檔案到「下載」資料夾</li><li>檔案改名 <code>instagram_main.json</code>（或 _reels.json）後移到 <code>raw/</code></li></ol>
+  </details>
+</div>
+<div class="bmblock">
+  <div class="bmrow"><a class="bm ts" href="javascript:(function()%7Bvar%20prefix%3D'_threads_'%3Bvar%20keys%3DObject.keys(localStorage).filter(function(x)%7Bif(x.indexOf(prefix)!%3D%3D0)return%20false%3Breturn%20true%3B%7D)%3Bif(keys.length%3D%3D%3D0)%7Balert('%E6%B2%92%E6%89%BE%E5%88%B0%20'%2Bprefix%2B'%20%E8%B3%87%E6%96%99%5Cn%E8%AB%8B%E5%85%88%E8%B7%91%20Threads%20%E6%93%B7%E5%8F%96%E6%9B%B8%E7%B1%A4')%3Breturn%7Dvar%20key%3Dkeys%5B0%5D%3Bif(keys.length%3E1)%7Bvar%20p%3Dprompt('%E6%89%BE%E5%88%B0%E5%A4%9A%E7%AD%86%EF%BC%8C%E8%AB%8B%E9%81%B8%20key%3A%5Cn'%2Bkeys.join('%5Cn')%2Ckeys%5B0%5D)%3Bif(!p)return%3Bkey%3Dp%7Dvar%20raw%3DlocalStorage.getItem(key)%3Bvar%20arr%3Btry%7Bvar%20o%3DJSON.parse(raw)%3Barr%3DArray.isArray(o)%3Fo%3AObject.values(o)%7Dcatch(e)%7Balert('JSON%20%E8%A7%A3%E6%9E%90%E5%A4%B1%E6%95%97%3A%20'%2Be.message)%3Breturn%7Darr.sort(function(a%2Cb)%7Breturn%20(b.date%7C%7C'').localeCompare(a.date%7C%7C'')%7D)%3Bvar%20data%3DJSON.stringify(arr%2Cnull%2C2)%3Bvar%20b%3Dnew%20Blob(%5Bdata%5D%2C%7Btype%3A'application%2Fjson%3Bcharset%3Dutf-8'%7D)%3Bvar%20u%3DURL.createObjectURL(b)%3Bvar%20a%3Ddocument.createElement('a')%3Ba.href%3Du%3Ba.download%3Dkey%2B'.json'%3Bdocument.body.appendChild(a)%3Ba.click()%3Bdocument.body.removeChild(a)%3BsetTimeout(function()%7BURL.revokeObjectURL(u)%7D%2C1000)%3Balert('%E5%B7%B2%E4%B8%8B%E8%BC%89%20'%2Bkey%2B'.json%EF%BC%8C%E5%85%B1%20'%2Barr.length%2B'%20%E7%AF%87%5Cn%E6%9F%A5%E7%9C%8B%E3%80%8C%E4%B8%8B%E8%BC%89%E3%80%8D%E8%B3%87%E6%96%99%E5%A4%BE')%7D)()">📥 Threads 下載</a></div>
+  <p class="summary">從 <code>_threads_&lt;author&gt;</code> 讀資料，做 Object.values + 日期降序排序，輸出 JSON 陣列。</p>
+  <details class="help">
+    <summary>📖 操作說明</summary>
+    <ol><li>先在 Threads 個人頁跑 🧵 Threads 擷取書籤</li><li>等抓完後點此書籤下載</li><li>檔案改名 <code>threads.json</code> 後移到 <code>raw/</code></li></ol>
+  </details>
+</div>
+<div class="bmblock">
+  <div class="bmrow"><a class="bm fb" href="javascript:(function()%7Bvar%20prefix%3D'_fb_'%3Bvar%20keys%3DObject.keys(localStorage).filter(function(x)%7Bif(x.indexOf(prefix)!%3D%3D0)return%20false%3Breturn%20true%3B%7D)%3Bif(keys.length%3D%3D%3D0)%7Balert('%E6%B2%92%E6%89%BE%E5%88%B0%20'%2Bprefix%2B'%20%E8%B3%87%E6%96%99%5Cn%E8%AB%8B%E5%85%88%E8%B7%91%20FB%20%E6%93%B7%E5%8F%96%E6%9B%B8%E7%B1%A4')%3Breturn%7Dvar%20key%3Dkeys%5B0%5D%3Bif(keys.length%3E1)%7Bvar%20p%3Dprompt('%E6%89%BE%E5%88%B0%E5%A4%9A%E7%AD%86%EF%BC%8C%E8%AB%8B%E9%81%B8%20key%3A%5Cn'%2Bkeys.join('%5Cn')%2Ckeys%5B0%5D)%3Bif(!p)return%3Bkey%3Dp%7Dvar%20raw%3DlocalStorage.getItem(key)%3Bvar%20arr%3Btry%7Bvar%20o%3DJSON.parse(raw)%3Barr%3DArray.isArray(o)%3Fo%3AObject.values(o)%7Dcatch(e)%7Balert('JSON%20%E8%A7%A3%E6%9E%90%E5%A4%B1%E6%95%97%3A%20'%2Be.message)%3Breturn%7Darr.sort(function(a%2Cb)%7Breturn%20(b.date%7C%7C'').localeCompare(a.date%7C%7C'')%7D)%3Bvar%20data%3DJSON.stringify(arr%2Cnull%2C2)%3Bvar%20b%3Dnew%20Blob(%5Bdata%5D%2C%7Btype%3A'application%2Fjson%3Bcharset%3Dutf-8'%7D)%3Bvar%20u%3DURL.createObjectURL(b)%3Bvar%20a%3Ddocument.createElement('a')%3Ba.href%3Du%3Ba.download%3Dkey%2B'.json'%3Bdocument.body.appendChild(a)%3Ba.click()%3Bdocument.body.removeChild(a)%3BsetTimeout(function()%7BURL.revokeObjectURL(u)%7D%2C1000)%3Balert('%E5%B7%B2%E4%B8%8B%E8%BC%89%20'%2Bkey%2B'.json%EF%BC%8C%E5%85%B1%20'%2Barr.length%2B'%20%E7%AF%87%5Cn%E6%9F%A5%E7%9C%8B%E3%80%8C%E4%B8%8B%E8%BC%89%E3%80%8D%E8%B3%87%E6%96%99%E5%A4%BE')%7D)()">📥 FB 下載</a></div>
+  <p class="summary">從 <code>_fb_&lt;author&gt;</code> 讀資料，做 Object.values + 日期降序排序，輸出 JSON 陣列。FB 在大量資料時最容易撞到剪貼簿問題。</p>
+  <details class="help">
+    <summary>📖 操作說明</summary>
+    <ol><li>先在 FB 個人/粉專頁跑 📘 FB 擷取書籤</li><li>等「滾完了」提示後，<b>不要按複製</b>，直接點此書籤</li><li>檔案改名 <code>facebook.json</code> 後移到 <code>raw/</code></li></ol>
+  </details>
+</div>
+</div>
+</div>
+
 </body>
 </html>
