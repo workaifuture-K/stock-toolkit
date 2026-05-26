@@ -94,12 +94,13 @@ footer {
   <h2>怎麼用（3 步驟）</h2>
   <div class="card">
     <strong>1. 安裝書籤</strong>（一次性）<br>
-    點上面的「安裝書籤」按鈕，把 3 個書籤拖到瀏覽器書籤列。
+    點上面的「安裝書籤」按鈕，把擷取書籤拖到瀏覽器書籤列。另有「📥 備用下載書籤」可在剪貼簿失敗時繞道下載 JSON 檔。
   </div>
   <div class="card">
     <strong>2. 抓資料</strong><br>
     開目標 KOL 的 Threads / IG / FB 主頁 → 點書籤 → 等跑完 → 按「複製」<br>
-    回 PowerShell 跑 <code>.\save_clipboard.ps1 -Author &lt;kol&gt;</code>
+    回 PowerShell 跑 <code>.\save_clipboard.ps1 -Author &lt;kol&gt;</code><br>
+    <span class="muted" style="font-size:12px">複製失敗？用「📥 下載書籤」直接下檔，手動 mv 到 raw/</span>
   </div>
   <div class="card">
     <strong>3. 跑 pipeline + 看報告</strong><br>
