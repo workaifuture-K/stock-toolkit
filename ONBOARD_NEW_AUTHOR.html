@@ -1,0 +1,208 @@
+﻿<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>用 Claude 上線新作者 — stock-toolkit</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, "Segoe UI", "Microsoft JhengHei", "PingFang TC", sans-serif; background: #0f1419; color: #e8eaed; margin: 0; padding: 40px 20px; line-height: 1.7; }
+.wrap { max-width: 820px; margin: 0 auto; }
+h1 { font-size: 32px; border-bottom: 3px solid #ff5757; padding-bottom: 12px; color: #fff; }
+h2 { font-size: 22px; color: #fff; border-left: 4px solid #ff5757; padding-left: 12px; margin-top: 36px; }
+h3 { font-size: 17px; color: #ffd24d; margin-top: 24px; }
+h4 { font-size: 15px; color: #ffd24d; margin-top: 16px; }
+p { color: #d1d5db; margin: 8px 0; }
+ul, ol { color: #d1d5db; padding-left: 24px; }
+li { margin: 4px 0; }
+code { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 3px; font-size: 13px; color: #facc15; font-family: Consolas, Monaco, monospace; }
+pre { background: #1a1f2e; border: 1px solid #2a3142; padding: 14px 18px; border-radius: 6px; overflow-x: auto; font-size: 13px; }
+pre code { background: transparent; padding: 0; color: #e8eaed; }
+table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #2a3142; }
+th { color: #ffd24d; font-weight: 600; background: rgba(255,255,255,0.03); }
+td { color: #c8cdd6; }
+hr { border: none; border-top: 1px solid #2a3142; margin: 32px 0; }
+a { color: #ff7070; text-decoration: none; }
+a:hover { text-decoration: underline; }
+strong, b { color: #fff; }
+blockquote { border-left: 3px solid #ffd24d; padding-left: 14px; color: #c8cdd6; margin: 12px 0; }
+.back { display: inline-block; margin-bottom: 20px; color: #8b95a8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="index.html">← 回首頁</a>
+<h1>用 Claude 上線一位新作者 — 範例與指令範本</h1>
+
+<p>這份文件示範<b>如何搭配 Claude（Claude Code）用 stock-toolkit 跑一位全新的 KOL 作者</b>。</p>
+<p>如果你只想純手動操作不透過 Claude，請看 <a href="QUICKSTART.md">QUICKSTART.md</a>。</p>
+
+<hr>
+
+<h2>核心觀念：每位作者 = 一份獨立的 toolkit 複本</h2>
+
+<p>stock-toolkit 本身是<b>乾淨範本</b>。上線新作者時，不要直接在範本裡爬資料，而是<b>複製一份</b>出來，每位作者自成一包：</p>
+
+<pre><code class="lang-">
+CMoney_claude\
+├── stock-toolkit\          ← 乾淨範本（只拿來複製，kols 永遠空的）
+├── &lt;作者A&gt;\                 ← 作者 A 的獨立複本（完整腳本 + 自己的 domains 資料）
+│   └── domains\&lt;domain&gt;\kols\&lt;作者A&gt;\   ← 爬的資料、報告都在這
+├── &lt;作者A&gt;-app\             ← （之後）作者 A 的下游 Web / App
+├── &lt;作者B&gt;\                 ← 作者 B 的獨立複本
+└── ...
+</code></pre>
+
+<p>這樣每位作者的資料、報告、下游應用完全隔離，互不影響，刪除或搬移都很乾淨。</p>
+
+<hr>
+
+<h2>分工：哪些 Claude 做、哪些你手動做</h2>
+
+<table>
+<thead><tr>
+<th>工作</th>
+<th>誰做</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>複製範本成獨立資料夾、移除繼承的 <code>.git</code></td>
+<td>✅ Claude</td>
+</tr>
+<tr>
+<td>在新複本的 <code>domain.json</code> 註冊作者、依題材調整 <code>domain_themes</code></td>
+<td>✅ Claude</td>
+</tr>
+<tr>
+<td>跑 pipeline 腳本（recover_dates / merge / discover / build / report）</td>
+<td>✅ Claude</td>
+</tr>
+<tr>
+<td>REVIEW CHECKPOINT 審 <code>kol_profile.json</code>（確認 persona、整理 eras、清雜詞）</td>
+<td>✅ Claude</td>
+</tr>
+<tr>
+<td>產報告、打開 <code>index.html</code></td>
+<td>✅ Claude</td>
+</tr>
+<tr>
+<td>之後做下游 Web / App / 課程規劃</td>
+<td>✅ Claude</td>
+</tr>
+<tr>
+<td><b>開瀏覽器登入、點擷取書籤、按「複製」</b></td>
+<td>🙋 <b>只能你手動做</b>（需要你登入的瀏覽器 session）</td>
+</tr>
+</tbody></table>
+
+<p>爬資料這段 Claude 代勞不了，所以指令分<b>兩個階段</b>：先請 Claude 建好環境 → 你手動爬完 → 再請 Claude 跑 pipeline。</p>
+
+<hr>
+
+<h2>階段一：請 Claude 建環境（爬之前）</h2>
+
+<p>把下面這段貼給 Claude，填入你的作者資訊：</p>
+
+<pre><code class="lang-">
+我要用 stock-toolkit 跑一位新作者。請幫我：
+- 作者 handle：&lt;例如 alpha_kitev&gt;
+- 公開暱稱 persona：&lt;暱稱&gt;
+- 題材領域：&lt;台股 / ETF / 美股 / 加密貨幣 / 其他，描述一下&gt;
+- 三平台網址：
+    IG：&lt;url&gt;
+    Threads：&lt;url&gt;
+    FB：&lt;url&gt;
+
+請複製 stock-toolkit 範本成一個獨立資料夾、移除繼承的 .git，
+在它自己的 domain.json 註冊作者並依題材調整 domain_themes，
+最後把我接下來要手動爬哪些頁面的清單列給我。
+</code></pre>
+
+<p>Claude 會：</p>
+<ol>
+<li><code>Copy-Item</code> 範本 → <code>&lt;作者&gt;\</code>（完整腳本 + domains 結構）</li>
+<li>移除複製過來的 <code>.git</code>（避免綁到範本的 GitHub 遠端）</li>
+<li>編輯 <code>&lt;作者&gt;\domains\&lt;domain&gt;\domain.json</code>：註冊 <code>kols</code> 條目（<code>id</code> / <code>persona</code> / <code>platforms_covered</code> / <code>profile_urls</code>），必要時依題材改 <code>domain_themes</code></li>
+<li>列出你要手動爬的頁面清單</li>
+
+</ul>
+<hr>
+
+<h2>中間：你手動爬資料</h2>
+
+<p>依 Claude 給的清單，在已登入的瀏覽器逐平台操作：</p>
+
+<ol>
+<li>開作者該平台頁面 → 點對應擷取書籤（IG / Threads / FB）→ 等面板跑完 → 按「複製」</li>
+<li>回 PowerShell（在 <code>&lt;作者&gt;\</code> 資料夾）執行：</li>
+</ul>
+<p>   ```powershell</p>
+<p>   .\save_clipboard.ps1 -Author <作者></p>
+<p>   ```</p>
+<ol>
+<li><b>IG 要跑兩個頁面</b>：<code>instagram.com/&lt;作者&gt;/</code>（主頁）和 <code>/reels/</code>，各擷取 + save 一次</li>
+<li>Threads、FB 各一次</li>
+
+</ul>
+<p>> 書籤還沒裝？雙擊 <code>&lt;作者&gt;\install-bookmarklets.html</code>，把擷取書籤拖到瀏覽器書籤列（一台瀏覽器只需裝一次）。</p>
+<p>> 複製失敗（資料量大或被剪貼簿管理器攔截）？改用安裝頁下方的「📥 下載書籤」直接下 JSON 檔。</p>
+
+<hr>
+
+<h2>階段二：請 Claude 跑 pipeline（爬完後）</h2>
+
+<p>四個平台檔案都進 <code>raw\</code> 之後，貼這段給 Claude：</p>
+
+<pre><code class="lang-">
+&lt;作者&gt; 三平台都爬好了，raw 資料夾有檔案了。
+請幫我跑 run_kol.ps1 -Discover，到 REVIEW CHECKPOINT 時
+幫我審 kol_profile.json（確認 persona、整理 eras 標籤、清掉樣板雜詞），
+然後 build DB、產報告，並打開 reports\index.html。
+</code></pre>
+
+<p>Claude 會跑：<code>recover_dates</code> → <code>merge_*</code> → <code>discover_kol_profile</code> → 代審 profile → <code>build_kol_db</code> → <code>generate_kol_reports</code>，最後打開報告。</p>
+
+<p>需要變現分析報告的話，加一句「<b>也跑 -Monetization</b>」即可（多產一份 <code>monetization_report.html</code>；Section 5 競品表是 Taiwan finance KOL 模板，跨域要人工微調）。</p>
+
+<hr>
+
+<h2>最精簡版</h2>
+
+<p>懶得填欄位也行，Claude 會反問缺的資訊：</p>
+
+<pre><code class="lang-">
+用 stock-toolkit 幫我上線新作者 &lt;handle&gt;，題材是 &lt;…&gt;
+</code></pre>
+
+<hr>
+
+<h2>後續：做下游應用</h2>
+
+<p>報告與結構化資料產生後，下游 Web / App / 課程都從這包讀：</p>
+
+<ul>
+<li>結構化資料：<code>&lt;作者&gt;\domains\&lt;domain&gt;\kols\&lt;作者&gt;\database\</code></li>
+<li>乾淨貼文：<code>&lt;作者&gt;\domains\&lt;domain&gt;\kols\&lt;作者&gt;\canonical\</code></li>
+
+</ul>
+<p>要做網站時跟 Claude 說：</p>
+
+<pre><code class="lang-">
+依 &lt;作者&gt; 的 database/ 資料，幫我做一個下游 Web App，
+放在 &lt;作者&gt;-app 資料夾（對照現有的 -app 慣例）。
+</code></pre>
+
+<hr>
+
+<h2>日常更新（作者發新內容後）</h2>
+
+<pre><code class="lang-">
+&lt;作者&gt; 又有新貼文了，我重新爬好 raw 了。
+請幫我跑 run_kol.ps1（不要 -Discover，保留我審過的 profile）並更新報告。
+</code></pre>
+
+
+</div>
+</body>
+</html>

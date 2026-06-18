@@ -188,3 +188,6 @@ Convert-MdToHtml -mdPath "$base\QUICKSTART.md" -htmlPath "$base\QUICKSTART.html"
 
 Convert-MdToHtml -mdPath "$base\README.md" -htmlPath "$base\README.html" -title "README"
 "Generated: README.html"
+
+Convert-MdToHtml -mdPath "$base\ONBOARD_NEW_AUTHOR.md" -htmlPath "$base\ONBOARD_NEW_AUTHOR.html" -title "用 Claude 上線新作者"
+"Generated: ONBOARD_NEW_AUTHOR.html"
