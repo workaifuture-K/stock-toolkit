@@ -133,7 +133,7 @@ function Convert-MdToHtml {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>$title — StockHero Toolkit</title>
+<title>$title — stock-toolkit</title>
 <style>
 * { box-sizing: border-box; }
 body { font-family: -apple-system, "Segoe UI", "Microsoft JhengHei", "PingFang TC", sans-serif; background: #0f1419; color: #e8eaed; margin: 0; padding: 40px 20px; line-height: 1.7; }

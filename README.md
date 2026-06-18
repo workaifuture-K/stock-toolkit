@@ -1,4 +1,4 @@
-﻿# StockHero Toolkit
+﻿# stock-toolkit
 
 A domain-aware KOL content quantification toolkit. Scrapes Threads / Instagram / Facebook public posts via browser bookmarklets, runs a PowerShell pipeline to produce a structured database + 3 analyst-style reports per KOL.
 
